@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\PostRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
@@ -53,5 +54,31 @@ class Post
             }
         }
         return $this;
+    }
+
+    public function getMostLikedComment(): ?Comment
+    {
+        if ($this->comments->isEmpty()) {
+            return null;
+        }
+
+        $maxLikesComment = null;
+        $maxLikes = -1;
+
+        foreach ($this->comments as $comment) {
+            if ($comment->getLikes() > $maxLikes) {
+                $maxLikes = $comment->getLikes();
+                $maxLikesComment = $comment;
+            }
+        }
+
+        return $maxLikesComment;
+    }
+
+    public function getApprovedComments(): Collection
+    {
+        return $this->comments->filter(function (Comment $comment) {
+            return $comment->isApproved() === true;
+        });
     }
 }
